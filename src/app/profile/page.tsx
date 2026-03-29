@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,42 +11,23 @@ import {
   Card,
   CardContent,
   Button,
-  TextField,
   Alert,
   CircularProgress,
-  Divider,
   IconButton,
   InputAdornment,
-  Avatar,
-  Menu,
-  MenuItem,
-  AppBar,
-  Toolbar,
 } from '@mui/material';
 import {
-  Brightness4,
-  Brightness7,
-  BrightnessAuto,
-  Logout,
-  ArrowBack,
   Visibility,
   VisibilityOff,
   Save,
 } from '@mui/icons-material';
-import { useThemeStore } from '../../modules/shared/store';
-import { useAuthStore } from '../../modules/shared/store/authStore';
-import { TextField as CustomTextField, Button as CustomButton, Card as CustomCard } from '../../modules/shared/components';
+import { TextField as CustomTextField, Button as CustomButton, Card as CustomCard, Navbar } from '../../modules/shared/components';
 import { useProfile, useUpdateProfile, useChangePassword } from '../../modules/auth/hooks/useAuth';
 import { profileSchema, changePasswordSchema, ProfileInput, ChangePasswordInput } from '../../modules/shared/schemas/auth.schema';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { mode, setMode } = useThemeStore();
-  const logout = useAuthStore((state) => state.logout);
-  const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
-  const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [currentAuth, setCurrentAuth] = useState({ isAuthenticated: false, user: null as any });
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState({
@@ -94,19 +74,18 @@ export default function ProfilePage() {
       if (storedUser) {
         try {
           const parsed = JSON.parse(storedUser);
-          setCurrentAuth({
-            isAuthenticated: !!token && !!parsed?.state?.user,
-            user: parsed?.state?.user || null,
-          });
+          if (!token || !parsed?.state?.user) {
+            router.push('/landing');
+          }
         } catch {
-          setCurrentAuth({ isAuthenticated: false, user: null });
+          router.push('/landing');
         }
       } else {
-        setCurrentAuth({ isAuthenticated: false, user: null });
+        router.push('/landing');
       }
       setAuthChecked(true);
     }
-  }, []);
+  }, [router]);
 
   // Update form when profile loads
   useEffect(() => {
@@ -123,40 +102,6 @@ export default function ProfilePage() {
       });
     }
   }, [profile, profileForm]);
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (authChecked && !currentAuth.isAuthenticated) {
-      router.push('/landing');
-    }
-  }, [authChecked, currentAuth.isAuthenticated, router]);
-
-  // Handlers
-  const handleThemeMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setThemeAnchorEl(event.currentTarget);
-  };
-
-  const handleThemeMenuClose = () => {
-    setThemeAnchorEl(null);
-  };
-
-  const handleThemeChange = (newMode: 'light' | 'dark' | 'system') => {
-    setMode(newMode);
-    handleThemeMenuClose();
-  };
-
-  const handleLogout = () => {
-    logout();
-    window.location.href = '/landing';
-  };
-
-  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setUserMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleUserMenuClose = () => {
-    setUserMenuAnchorEl(null);
-  };
 
   const toggleShowPassword = (field: 'current' | 'new' | 'confirm') => {
     setShowPasswords((prev) => ({ ...prev, [field]: !prev[field] }));
@@ -185,12 +130,6 @@ export default function ProfilePage() {
     }
   };
 
-  const themeIcon = {
-    light: <Brightness7 />,
-    dark: <Brightness4 />,
-    system: <BrightnessAuto />,
-  }[mode];
-
   // Loading state
   if (!authChecked || isLoadingProfile) {
     return (
@@ -203,69 +142,7 @@ export default function ProfilePage() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Navigation */}
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Container maxWidth="lg">
-          <Toolbar disableGutters>
-            <IconButton onClick={() => router.push('/')} sx={{ mr: 2 }}>
-              <ArrowBack />
-            </IconButton>
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{
-                flexGrow: 1,
-                fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              LotusL
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <IconButton onClick={handleThemeMenuOpen} color="inherit">
-                {themeIcon}
-              </IconButton>
-              <Menu
-                anchorEl={themeAnchorEl}
-                open={Boolean(themeAnchorEl)}
-                onClose={handleThemeMenuClose}
-              >
-                <MenuItem onClick={() => handleThemeChange('light')}>
-                  <Brightness7 sx={{ mr: 1 }} /> Claro
-                </MenuItem>
-                <MenuItem onClick={() => handleThemeChange('dark')}>
-                  <Brightness4 sx={{ mr: 1 }} /> Oscuro
-                </MenuItem>
-                <MenuItem onClick={() => handleThemeChange('system')}>
-                  <BrightnessAuto sx={{ mr: 1 }} /> Sistema
-                </MenuItem>
-              </Menu>
-
-              <Button
-                onClick={handleUserMenuOpen}
-                startIcon={
-                  <Avatar sx={{ width: 24, height: 24, fontSize: 14 }}>
-                    {currentAuth.user?.firstName?.[0] || currentAuth.user?.email?.[0] || 'U'}
-                  </Avatar>
-                }
-              >
-                {currentAuth.user?.firstName || currentAuth.user?.email?.split('@')[0]}
-              </Button>
-              <Menu
-                anchorEl={userMenuAnchorEl}
-                open={Boolean(userMenuAnchorEl)}
-                onClose={handleUserMenuClose}
-              >
-                <MenuItem onClick={handleLogout}>
-                  <Logout sx={{ mr: 1 }} /> Cerrar Sesión
-                </MenuItem>
-              </Menu>
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
+      <Navbar />
 
       {/* Content */}
       <Container maxWidth="md" sx={{ py: 4 }}>
