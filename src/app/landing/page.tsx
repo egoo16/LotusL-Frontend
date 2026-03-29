@@ -54,7 +54,8 @@ export default function LandingPage() {
   const handleLogout = () => {
     logout();
     setUserMenuAnchorEl(null);
-    router.push('/landing');
+    // Recargar la página para que se rehidrate Zustand correctamente
+    window.location.href = '/landing';
   };
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
