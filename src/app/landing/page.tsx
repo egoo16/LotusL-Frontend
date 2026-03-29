@@ -18,6 +18,12 @@ import {
   MenuItem,
   Avatar,
   CircularProgress,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Divider,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -26,6 +32,8 @@ import {
   BrightnessAuto,
   Logout,
   Search,
+  Person,
+  Close,
 } from '@mui/icons-material';
 import { useThemeStore } from '../../modules/shared/store';
 import { useAuthStore } from '../../modules/shared/store/authStore';
@@ -173,6 +181,9 @@ export default function LandingPage() {
                     open={Boolean(userMenuAnchorEl)}
                     onClose={handleUserMenuClose}
                   >
+                    <MenuItem onClick={() => { router.push('/profile'); handleUserMenuClose(); }}>
+                      <Person sx={{ mr: 1 }} /> Mi Perfil
+                    </MenuItem>
                     <MenuItem onClick={handleLogout}>
                       <Logout sx={{ mr: 1 }} /> Cerrar Sesión
                     </MenuItem>
@@ -203,6 +214,60 @@ export default function LandingPage() {
           </Toolbar>
         </Container>
       </AppBar>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{
+          sx: { width: 280 },
+        }}
+      >
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <IconButton onClick={() => setMobileMenuOpen(false)}>
+            <Close />
+          </IconButton>
+        </Box>
+        <Divider />
+        <List>
+          {currentAuth.isAuthenticated ? (
+            <>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { router.push('/'); setMobileMenuOpen(false); }}>
+                  <Search sx={{ mr: 2 }} />
+                  <ListItemText primary="Buscar Libros" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { router.push('/profile'); setMobileMenuOpen(false); }}>
+                  <Person sx={{ mr: 2 }} />
+                  <ListItemText primary="Mi Perfil" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
+                  <Logout sx={{ mr: 2 }} />
+                  <ListItemText primary="Cerrar Sesión" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          ) : (
+            <>
+              <ListItem disablePadding>
+                <ListItemButton component={Link} href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <ListItemText primary="Iniciar Sesión" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton component={Link} href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <ListItemText primary="Registrarse" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          )}
+        </List>
+      </Drawer>
 
       {/* Hero Section */}
       <Box

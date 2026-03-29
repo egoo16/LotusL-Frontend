@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Box, CircularProgress, Typography, Container, Button, AppBar, Toolbar, IconButton, Avatar, Menu, MenuItem } from '@mui/material';
-import { Brightness4, Brightness7, BrightnessAuto, Logout, Search, Menu as MenuIcon } from '@mui/icons-material';
+import { Box, CircularProgress, Typography, Container, Button, AppBar, Toolbar, IconButton, Avatar, Menu, MenuItem, Drawer, List, ListItem, ListItemButton, ListItemText, Divider } from '@mui/material';
+import { Brightness4, Brightness7, BrightnessAuto, Logout, Search, Menu as MenuIcon, Person, Close } from '@mui/icons-material';
 import { useThemeStore } from '../modules/shared/store';
 import { useAuthStore } from '../modules/shared/store/authStore';
 
@@ -14,6 +14,7 @@ export default function MarketplacePage() {
   const logout = useAuthStore((state) => state.logout);
   const [themeAnchorEl, setThemeAnchorEl] = useState<null | HTMLElement>(null);
   const [userMenuAnchorEl, setUserMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [currentAuth, setCurrentAuth] = useState({ isAuthenticated: false, user: null as any });
 
@@ -149,6 +150,9 @@ export default function MarketplacePage() {
                     open={Boolean(userMenuAnchorEl)}
                     onClose={handleUserMenuClose}
                   >
+                    <MenuItem onClick={() => { router.push('/profile'); handleUserMenuClose(); }}>
+                      <Person sx={{ mr: 1 }} /> Mi Perfil
+                    </MenuItem>
                     <MenuItem onClick={handleLogout}>
                       <Logout sx={{ mr: 1 }} /> Cerrar Sesión
                     </MenuItem>
@@ -168,9 +172,71 @@ export default function MarketplacePage() {
                 </>
               )}
             </Box>
+
+            {/* Mobile Menu Button */}
+            <IconButton
+              sx={{ display: { xs: 'flex', md: 'none' } }}
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <MenuIcon />
+            </IconButton>
           </Toolbar>
         </Container>
       </AppBar>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        PaperProps={{
+          sx: { width: 280 },
+        }}
+      >
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <IconButton onClick={() => setMobileMenuOpen(false)}>
+            <Close />
+          </IconButton>
+        </Box>
+        <Divider />
+        <List>
+          {currentAuth.isAuthenticated ? (
+            <>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { router.push('/'); setMobileMenuOpen(false); }}>
+                  <Search sx={{ mr: 2 }} />
+                  <ListItemText primary="Buscar Libros" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { router.push('/profile'); setMobileMenuOpen(false); }}>
+                  <Person sx={{ mr: 2 }} />
+                  <ListItemText primary="Mi Perfil" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
+                  <Logout sx={{ mr: 2 }} />
+                  <ListItemText primary="Cerrar Sesión" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          ) : (
+            <>
+              <ListItem disablePadding>
+                <ListItemButton component={Link} href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <ListItemText primary="Iniciar Sesión" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton component={Link} href="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <ListItemText primary="Registrarse" />
+                </ListItemButton>
+              </ListItem>
+            </>
+          )}
+        </List>
+      </Drawer>
 
       {/* Marketplace Content - Placeholder */}
       <Box
