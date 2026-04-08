@@ -32,9 +32,14 @@ import {
   Menu as MenuIcon,
   Close,
   Search,
+  ShoppingCart,
+  MenuBook,
+  AdminPanelSettings,
 } from '@mui/icons-material';
 import { useThemeStore } from '../store/themeStore';
 import { useAuthStore } from '../store/authStore';
+import { useCartStore } from '../../marketplace/store/cartStore';
+import { Badge, Tooltip } from '@mui/material';
 
 interface NavbarProps {
   showBackButton?: boolean;
@@ -62,6 +67,10 @@ export function Navbar({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [currentAuth, setCurrentAuth] = useState({ isAuthenticated: false, user: null as any });
+  
+  // Cart count from store
+  const getCount = useCartStore((state) => state.getCount);
+  const cartCount = getCount();
 
   // Verificar auth status
   useEffect(() => {
@@ -122,6 +131,13 @@ export function Navbar({
     router.push('/profile/addresses');
   };
 
+  const handleNavigateToMyBooks = () => {
+    handleUserMenuClose();
+    router.push('/dashboard/my-books');
+  };
+
+  // Funciones de navegación ya no usadas - ahora todo está en /dashboard/my-books
+
   const themeIcon = {
     light: <Brightness7 />,
     dark: <Brightness4 />,
@@ -152,6 +168,22 @@ export function Navbar({
 
   const UserMenuContent = currentAuth.isAuthenticated ? (
     <>
+      {/* Sección de Gestión */}
+      <Box sx={{ px: 2, py: 1 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+          Gestión
+        </Typography>
+      </Box>
+      <MenuItem onClick={handleNavigateToMyBooks}>
+        <MenuBook sx={{ mr: 1 }} /> Mis Libros
+      </MenuItem>
+      <Divider sx={{ my: 1 }} />
+      {/* Sección de Cuenta */}
+      <Box sx={{ px: 2, py: 1 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+          Cuenta
+        </Typography>
+      </Box>
       <MenuItem onClick={handleNavigateToProfile}>
         <Person sx={{ mr: 1 }} /> Mi Perfil
       </MenuItem>
@@ -239,6 +271,22 @@ export function Navbar({
                 </MenuItem>
               </Menu>
 
+              {/* Cart Button */}
+              <Tooltip title="Carrito de compras">
+                <IconButton
+                  color="inherit"
+                  onClick={() => router.push('/cart')}
+                >
+                  {cartCount > 0 ? (
+                    <Badge badgeContent={cartCount} color="secondary">
+                      <ShoppingCart />
+                    </Badge>
+                  ) : (
+                    <ShoppingCart />
+                  )}
+                </IconButton>
+              </Tooltip>
+
               {/* User Menu */}
               {currentAuth.isAuthenticated ? (
                 <>
@@ -309,16 +357,37 @@ export function Navbar({
             </ListItemButton>
           </ListItem>
           
+          {/* Cart en móvil */}
+          <ListItem disablePadding>
+            <ListItemButton onClick={() => { router.push('/cart'); setMobileMenuOpen(false); }}>
+              <Badge badgeContent={cartCount} color="secondary" sx={{ mr: 2 }}>
+                <ShoppingCart />
+              </Badge>
+              <ListItemText primary="Carrito" />
+            </ListItemButton>
+          </ListItem>
+          
           {currentAuth.isAuthenticated ? (
             <>
-              {showSearchButton && (
-                <ListItem disablePadding>
-                  <ListItemButton onClick={() => { router.push('/'); setMobileMenuOpen(false); }}>
-                    <Search sx={{ mr: 2 }} />
-                    <ListItemText primary="Buscar Libros" />
-                  </ListItemButton>
-                </ListItem>
-              )}
+              {/* Sección de Gestión */}
+              <ListItem>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Gestión
+                </Typography>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => { router.push('/dashboard/my-books'); setMobileMenuOpen(false); }}>
+                  <MenuBook sx={{ mr: 2 }} />
+                  <ListItemText primary="Mis Libros" />
+                </ListItemButton>
+              </ListItem>
+              <Divider sx={{ my: 1 }} />
+              {/* Sección de Cuenta */}
+              <ListItem>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Cuenta
+                </Typography>
+              </ListItem>
               <ListItem disablePadding>
                 <ListItemButton onClick={() => { router.push('/profile'); setMobileMenuOpen(false); }}>
                   <Person sx={{ mr: 2 }} />

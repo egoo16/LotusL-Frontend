@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosRequestConfig } from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -48,8 +48,11 @@ class ApiClient {
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             
-            // Don't redirect if already on auth page
-            if (!window.location.pathname.includes('/(auth)')) {
+            // Don't redirect if already on auth pages
+            const authPages = ['/login', '/register', '/recovery', '/reset-password'];
+            const isAuthPage = authPages.some(page => window.location.pathname.includes(page));
+            
+            if (!isAuthPage) {
               window.location.href = '/login';
             }
           }
@@ -59,28 +62,28 @@ class ApiClient {
     );
   }
 
-  async get<T>(url: string, config?: InternalAxiosRequestConfig) {
-    const response = await this.client.get<T>(url, config);
+  async get<T>(url: string, params?: Record<string, any>) {
+    const response = await this.client.get<T>(url, params ? { params } : undefined);
     return response.data;
   }
 
-  async post<T>(url: string, data?: any, config?: InternalAxiosRequestConfig) {
-    const response = await this.client.post<T>(url, data, config);
+  async post<T>(url: string, data?: any) {
+    const response = await this.client.post<T>(url, data);
     return response.data;
   }
 
-  async patch<T>(url: string, data?: any, config?: InternalAxiosRequestConfig) {
-    const response = await this.client.patch<T>(url, data, config);
+  async patch<T>(url: string, data?: any) {
+    const response = await this.client.patch<T>(url, data);
     return response.data;
   }
 
-  async put<T>(url: string, data?: any, config?: InternalAxiosRequestConfig) {
-    const response = await this.client.put<T>(url, data, config);
+  async put<T>(url: string, data?: any) {
+    const response = await this.client.put<T>(url, data);
     return response.data;
   }
 
-  async delete<T>(url: string, config?: InternalAxiosRequestConfig) {
-    const response = await this.client.delete<T>(url, config);
+  async delete<T>(url: string) {
+    const response = await this.client.delete<T>(url);
     return response.data;
   }
 }
